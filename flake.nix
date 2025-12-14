@@ -47,8 +47,9 @@
 
         installPhase = ''
           bash $hexalyInstaller --noroot --target $out
-          mkdir -p $out/lib
-          mv $out/bin/libhexaly140.so $out/lib
+          # mkdir -p $out/lib
+          # mv $out/bin/libhexaly140.so $out/lib
+          ln -s $out/bin $out/lib
         '';
 
         meta = {
