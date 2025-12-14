@@ -47,9 +47,13 @@
 
         installPhase = ''
           bash $hexalyInstaller --noroot --target $out
-          # mkdir -p $out/lib
-          # mv $out/bin/libhexaly140.so $out/lib
-          ln -s $out/bin $out/lib
+          rm -rf $out/bin/python
+          rm $out/bin/localsolver.jar
+          rm $out/bin/localsolvernet.dll
+          mkdir -p $out/lib
+          mv $out/bin/libhexaly140.so $out/lib
+          mv $out/bin/hexaly.jar $out/lib
+          mv $out/bin/Hexaly.NET.dll $out/lib
         '';
 
         meta = {
