@@ -18,17 +18,17 @@
       hexalyPlatforms =
         if pkgs.stdenv.isAarch64
         then {
-          url = "https://www.hexaly.com/downloads/14_0_20251211/Hexaly_14_0_20251211_LinuxA64.run";
-          sha256 = "1lq765vd192dmv15g9z43yfrd29wz6qkxdcqgr57ya7i23pxz4ms";
+          url = "https://www.hexaly.com/downloads/14_5_20260326/Hexaly_14_5_20260326_LinuxA64.run";
+          sha256 = "sha256-sG4rYnWCLNAkx9RBDyo4K8xgNDjW/hfPye7/QdcDs4I=";
         }
         else {
-          url = "https://www.hexaly.com/downloads/14_0_20251211/Hexaly_14_0_20251211_Linux64.run";
-          sha256 = "0shy3d5fm8ziihysa5r2f4vpx47h4v68di46s2lgcqy1q9gi86q3";
+          url = "https://www.hexaly.com/downloads/14_5_20260326/Hexaly_14_5_20260326_Linux64.run";
+          sha256 = "sha256-5q3/mLOkMMXWQ4IAje/WPrkgopF3Dxzdn9q0hT6f0yc=";
         };
 
       hexaly = pkgs.stdenv.mkDerivation {
         name = "hexaly";
-        version = "14.0.20251211";
+        version = "14.5.20260326";
 
         hexalyInstaller = pkgs.fetchurl {
           url = hexalyPlatforms.url;
@@ -48,11 +48,8 @@
         installPhase = ''
           bash $hexalyInstaller --noroot --target $out
           rm $out/uninstall.sh
-          rm $out/bin/localsolver.jar
-          rm $out/bin/localsolvernet.dll
-          rm -rf $out/bin/python/localsolver
           mkdir -p $out/lib
-          mv $out/bin/libhexaly140.so $out/lib
+          mv $out/bin/libhexaly145.so $out/lib
           mv $out/bin/hexaly.jar $out/lib
           mv $out/bin/Hexaly.NET.dll $out/lib
           mv $out/bin/python $out/lib
