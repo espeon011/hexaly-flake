@@ -24,26 +24,24 @@
         sha256 = "sha256-aDvLzZw80s/59YQfeKBK7qJy5rjARwLvCScKT5Dgy84=";
       };
     };
-  in
-    flake-utils.lib.eachSystem (builtins.attrNames srcs) (system: let
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
 
-      hexaly = pkgs.stdenv.mkDerivation {
+    overlay = final: prev: {
+      hexaly = final.stdenv.mkDerivation {
         pname = "hexaly";
         inherit version;
 
-        src = pkgs.fetchurl srcs.${system};
+        src = final.fetchurl (
+          srcs.${final.stdenv.hostPlatform.system}
+          or (throw "hexaly: unsupported system ${final.stdenv.hostPlatform.system}")
+        );
 
         outputs = ["out" "lib" "dev" "doc" "python"];
 
         dontUnpack = true;
         dontBuild = true;
 
-        nativeBuildInputs = [pkgs.autoPatchelfHook];
-        buildInputs = [(pkgs.lib.getLib pkgs.stdenv.cc.cc)];
+        nativeBuildInputs = [final.autoPatchelfHook];
+        buildInputs = [(final.lib.getLib final.stdenv.cc.cc)];
 
         appendRunpaths = ["${placeholder "lib"}/lib"];
 
@@ -85,8 +83,8 @@
           description = "Hexaly Optimizer";
           homepage = "https://www.hexaly.com/";
           mainProgram = "hexaly";
-          license = pkgs.lib.licenses.unfree;
-          sourceProvenance = with pkgs.lib.sourceTypes; [
+          license = final.lib.licenses.unfree;
+          sourceProvenance = with final.lib.sourceTypes; [
             binaryNativeCode
             # binaryBytecode
           ];
@@ -94,37 +92,58 @@
         };
       };
 
-      mkHexalyPython = python:
-        python.pkgs.buildPythonPackage {
-          pname = "hexaly";
-          inherit version;
+      # 全 Python バージョンの pkgs スコープに hexaly を追加する
+      pythonPackagesExtensions =
+        prev.pythonPackagesExtensions
+        ++ [
+          (pyfinal: pyprev: {
+            hexaly = pyfinal.buildPythonPackage {
+              pname = "hexaly";
+              inherit version;
 
-          pyproject = false;
-          dontUnpack = true;
-          dontBuild = true;
+              pyproject = false;
+              dontUnpack = true;
+              dontBuild = true;
 
-          installPhase = ''
-            runHook preInstall
-            mkdir -p "$out/${python.sitePackages}"
-            ln -s ${hexaly.python}/lib/python/hexaly "$out/${python.sitePackages}/hexaly"
-            runHook postInstall
-          '';
+              installPhase = ''
+                runHook preInstall
+                mkdir -p "$out/${pyfinal.python.sitePackages}"
+                ln -s ${final.hexaly.python}/lib/python/hexaly "$out/${pyfinal.python.sitePackages}/hexaly"
+                runHook postInstall
+              '';
 
-          meta = hexaly.meta // {description = "Python bindings for Hexaly Optimizer";};
-        };
+              pythonImportsCheck = ["hexaly"];
+
+              meta =
+                builtins.removeAttrs final.hexaly.meta ["mainProgram"]
+                // {description = "Python bindings for Hexaly Optimizer";};
+            };
+          })
+        ];
+    };
+  in
+    flake-utils.lib.eachSystem (builtins.attrNames srcs) (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = [overlay];
+      };
     in {
       packages = {
-        inherit hexaly;
-        default = hexaly.out;
+        inherit (pkgs) hexaly;
+        default = pkgs.hexaly.out;
       };
 
-      checks.python-import = mkHexalyPython pkgs.python3;
+      checks.python-import = pkgs.python3Packages.hexaly;
 
       devShells.default = pkgs.mkShell {
         packages = [
-          hexaly
-          (pkgs.python3.withPackages (ps: [(mkHexalyPython pkgs.python3)]))
+          pkgs.hexaly.out
+          (pkgs.python3.withPackages (ps: [ps.hexaly]))
         ];
       };
-    });
+    })
+    // {
+      overlays.default = overlay;
+    };
 }
