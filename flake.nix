@@ -115,7 +115,7 @@
     in {
       packages = {
         inherit hexaly;
-        default = hexaly;
+        default = hexaly.out;
       };
 
       checks.python-import = mkHexalyPython pkgs.python3;
