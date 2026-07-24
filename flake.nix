@@ -18,17 +18,17 @@
       hexalyPlatforms =
         if pkgs.stdenv.isAarch64
         then {
-          url = "https://www.hexaly.com/downloads/14_5_20260326/Hexaly_14_5_20260326_LinuxA64.run";
-          sha256 = "sha256-sG4rYnWCLNAkx9RBDyo4K8xgNDjW/hfPye7/QdcDs4I=";
+          url = "https://www.hexaly.com/downloads/15_0_20260721/Hexaly_15_0_20260721_LinuxA64.run";
+          sha256 = "sha256-aDvLzZw80s/59YQfeKBK7qJy5rjARwLvCScKT5Dgy84=";
         }
         else {
-          url = "https://www.hexaly.com/downloads/14_5_20260326/Hexaly_14_5_20260326_Linux64.run";
-          sha256 = "sha256-5q3/mLOkMMXWQ4IAje/WPrkgopF3Dxzdn9q0hT6f0yc=";
+          url = "https://www.hexaly.com/downloads/15_0_20260721/Hexaly_15_0_20260721_Linux64.run";
+          sha256 = "sha256-W+9ttpKD3zcSyq3w5IshBxCPefLqL8drmKWJMsq9Az4=";
         };
 
       hexaly = pkgs.stdenv.mkDerivation {
         name = "hexaly";
-        version = "14.5.20260326";
+        version = "15.0.20260721";
 
         hexalyInstaller = pkgs.fetchurl {
           url = hexalyPlatforms.url;
@@ -49,7 +49,7 @@
           bash $hexalyInstaller --noroot --target $out
           rm $out/uninstall.sh
           mkdir -p $out/lib
-          mv $out/bin/libhexaly145.so $out/lib
+          mv $out/bin/libhexaly150.so $out/lib
           mv $out/bin/hexaly.jar $out/lib
           mv $out/bin/Hexaly.NET.dll $out/lib
           mv $out/bin/python $out/lib
